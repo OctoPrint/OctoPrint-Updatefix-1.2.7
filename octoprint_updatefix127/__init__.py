@@ -7,29 +7,14 @@ import threading
 BROKEN_VERSION = "1.2.7"
 FIXED_VERSION = "1.2.8"
 
-class UpdateFix127Plugin(octoprint.plugin.StartupPlugin):
-
-	def initialize(self):
-		if octoprint_version_matches(BROKEN_VERSION):
-			self._monkey_patch_reload_plugins()
+class UpdateFix127Plugin(octoprint.plugin.StartupPlugin,
+                         octoprint.plugin.RestartNeedingPlugin):
 
 	def on_after_startup(self):
 		if octoprint_version_matches(BROKEN_VERSION):
 			self._monkey_patch_127()
 		elif octoprint_version_matches(FIXED_VERSION):
 			self._uninstall_plugin()
-
-	def _monkey_patch_reload_plugins(self):
-		flag = "__monkey_patched_by_update127"
-		original_reload_plugins = self._plugin_manager.reload_plugins
-		if not hasattr(original_reload_plugins, flag):
-			self._logger.info("Monkey patching self._plugin_manager.reload_plugins...")
-			def patched_reload_plugins(*args, **kwargs):
-				original_reload_plugins(*args, **kwargs)
-				self._monkey_patch_127()
-			self._plugin_manager.reload_plugins = patched_reload_plugins
-			setattr(self._plugin_manager.reload_plugins, flag, True)
-			self._logger.info("... monkey patched self._plugin_manager.reload_plugins")
 
 	def _monkey_patch_127(self):
 		# "octoprint.plugins.softwareupdate" is actually loaded dynamically as
