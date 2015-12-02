@@ -98,6 +98,7 @@ class UpdateFix127Plugin(octoprint.plugin.StartupPlugin,
 	def _perform_restart(self):
 		restart_command = self._settings.global_get(["server", "commands", "serverRestartCommand"])
 		if restart_command:
+			self._logger.info("Restarting after uninstall of myself...")
 			import sarge
 			try:
 				sarge.run(restart_command)
