@@ -7,7 +7,12 @@ import threading
 BROKEN_VERSION = "1.2.7"
 FIXED_VERSION = "1.2.8"
 
-class UpdateFix127Plugin(octoprint.plugin.StartupPlugin):
+class UpdateFix127Plugin(octoprint.plugin.StartupPlugin,
+                         octoprint.plugin.RestartNeedingPlugin):
+
+	def initialize(self):
+		if octoprint_version_matches(BROKEN_VERSION):
+			self._monkey_patch_reload_plugins()
 
 	def on_after_startup(self):
 		if octoprint_version_matches(BROKEN_VERSION):
@@ -15,9 +20,19 @@ class UpdateFix127Plugin(octoprint.plugin.StartupPlugin):
 		elif octoprint_version_matches(FIXED_VERSION):
 			self._uninstall_plugin()
 
-	def _monkey_patch_127(self):
-		self._logger.info("Monkey patching octoprint.plugins.softwareupdate.SoftwareUpdatePlugin...")
+	def _monkey_patch_reload_plugins(self):
+		flag = "__monkey_patched_by_update127"
+		original_reload_plugins = self._plugin_manager.reload_plugins
+		if not hasattr(original_reload_plugins, flag):
+			self._logger.info("Monkey patching self._plugin_manager.reload_plugins...")
+			def patched_reload_plugins(*args, **kwargs):
+				original_reload_plugins(*args, **kwargs)
+				self._monkey_patch_127()
+			self._plugin_manager.reload_plugins = patched_reload_plugins
+			setattr(self._plugin_manager.reload_plugins, flag, True)
+			self._logger.info("... monkey patched self._plugin_manager.reload_plugins")
 
+	def _monkey_patch_127(self):
 		# "octoprint.plugins.softwareupdate" is actually loaded dynamically as
 		# just "softwareupdate"
 		try:
@@ -27,6 +42,7 @@ class UpdateFix127Plugin(octoprint.plugin.StartupPlugin):
 			return
 
 		# monkey patch the software update plugin
+		self._logger.info("Monkey patching octoprint.plugins.softwareupdate.SoftwareUpdatePlugin...")
 		def fixed_perform_updates(instance, check_targets=None, force=False):
 			"""
 			Performs the updates for the given check_targets. Will update all possible targets by default.
@@ -97,7 +113,8 @@ def octoprint_version_matches(target):
 	                        __version__.startswith(target + "-") or
 	                        __version__.startswith(target + "."))
 
-__plugin_name__ = "Updater fix for 1.2.7"
+__plugin_name__ = "Updatefix for 1.2.7"
+
 if not octoprint_version_matches(BROKEN_VERSION):
 	__plugin_name__ += " (can be uninstalled now)"
 	__plugin_description__ = "Since you are not running OctoPrint {}, this plugin is non-functional and can be uninstalled.".format(BROKEN_VERSION)
