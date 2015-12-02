@@ -27,7 +27,7 @@ class UpdateFix127Plugin(octoprint.plugin.StartupPlugin):
 			return
 
 		# monkey patch the software update plugin
-		def perform_updates(instance, check_targets=None, force=False):
+		def fixed_perform_updates(instance, check_targets=None, force=False):
 			"""
 			Performs the updates for the given check_targets. Will update all possible targets by default.
 
@@ -58,7 +58,7 @@ class UpdateFix127Plugin(octoprint.plugin.StartupPlugin):
 
 			return to_be_updated, dict((key, check["displayName"] if "displayName" in check else key) for key, check in populated_checks.items() if key in to_be_updated)
 
-		SoftwareUpdatePlugin.perform_updates = perform_updates
+		SoftwareUpdatePlugin.perform_updates = fixed_perform_updates
 
 		self._logger.info("... octoprint.plugins.softwareupdate.SoftwareUpdatePlugin monkey patched with fix for updater")
 		self._logger.info("Updating to 1.2.8 should now work just fine.")
