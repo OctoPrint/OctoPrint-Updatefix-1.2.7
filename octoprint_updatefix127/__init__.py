@@ -14,6 +14,25 @@ class UpdateFix127Plugin(octoprint.plugin.StartupPlugin,
 	# Note: we mark ourselves as an AssetPlugin instead of just a RestartNeedingPlugin
 	# since that will also trigger our UI to show the reload dialog
 
+	##~~ Softwareupdate hook
+
+	def get_update_information(self):
+		return dict(
+			pbpilink=dict(
+				displayName=self._plugin_name,
+				displayVersion=self._plugin_version,
+
+				# version check: github repository
+				type="github_release",
+				user="OctoPrint",
+				repo="OctoPrint-Updatefix-1.2.7",
+				current=self._plugin_version,
+
+				# update method: pip
+				pip="https://github.com/OctoPrint/OctoPrint-Updatefix-1.2.7/archive/{target_version}.zip"
+			)
+		)
+
 	def on_after_startup(self):
 		if octoprint_version_matches(BROKEN_VERSION):
 			self._monkey_patch_127()
@@ -121,4 +140,10 @@ if not octoprint_version_matches(BROKEN_VERSION):
 def __plugin_load__():
 	global __plugin_implementation__
 	__plugin_implementation__ = UpdateFix127Plugin()
+
+	global __plugin_hooks__
+	__plugin_hooks__ = {
+		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
+	}
+
 
