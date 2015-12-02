@@ -8,7 +8,11 @@ BROKEN_VERSION = "1.2.7"
 FIXED_VERSION = "1.2.8"
 
 class UpdateFix127Plugin(octoprint.plugin.StartupPlugin,
-                         octoprint.plugin.RestartNeedingPlugin):
+                         octoprint.plugin.AssetPlugin,
+                         octoprint.plugin.SettingsPlugin):
+
+	# Note: we mark ourselves as an AssetPlugin instead of just a RestartNeedingPlugin
+	# since that will also trigger our UI to show the reload dialog
 
 	def on_after_startup(self):
 		if octoprint_version_matches(BROKEN_VERSION):
@@ -87,8 +91,18 @@ class UpdateFix127Plugin(octoprint.plugin.StartupPlugin,
 			response = pmgr.command_uninstall(plugin)
 			if response.status_code == 200:
 				self._logger.info("... uninstalled myself, thanks!")
+				self._perform_restart()
 			else:
 				self._logger.error("Error trying to uninstall myself: {!r}".format(response))
+
+	def _perform_restart(self):
+		restart_command = self._settings.global_get(["server", "commands", "serverRestartCommand"])
+		if restart_command:
+			import sarge
+			try:
+				sarge.run(restart_command)
+			except:
+				self._logger.exception("Error while trying to restarting, please restart manually")
 
 
 def octoprint_version_matches(target):
