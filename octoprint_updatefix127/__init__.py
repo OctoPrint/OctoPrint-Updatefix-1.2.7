@@ -7,8 +7,7 @@ import threading
 BROKEN_VERSION = "1.2.7"
 FIXED_VERSION = "1.2.8"
 
-class UpdateFix127Plugin(octoprint.plugin.StartupPlugin,
-                         octoprint.plugin.RestartNeedingPlugin):
+class UpdateFix127Plugin(octoprint.plugin.StartupPlugin):
 
 	def initialize(self):
 		if octoprint_version_matches(BROKEN_VERSION):
