@@ -1,0 +1,35 @@
+<div id="plugin_updatefix127_infodialog" class="modal hide fade">
+    <div class="modal-header">
+        <a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
+        <h3>{{ _('Updatefix 1.2.7') }}</h3>
+    </div>
+    <div class="modal-body">
+        <p>
+            The "Updatefix 1.2.7" Plugin is installed on your OctoPrint installation.
+            You should now be able to update to OctoPrint 1.2.8 without issues.
+        </p>
+        <p>
+            Please note that the "Updatefix 1.2.7" plugin will <strong>uninstall itself</strong>
+            once it detects that you have 1.2.8 installed. In order to uninstall itself, a
+            restart of the OctoPrint server will be necessary. That means that you will see
+            <strong>two restarts of OctoPrint</strong> during your update from 1.2.7
+            to 1.2.8: One for the update to 1.2.8, one for the uninstall of the plugin.
+        </p>
+        <p>
+            OctoPrint will show you a "Please Reload" dialog in the middle of these two
+            restarts. <strong>Do not reload then</strong>. The background of the reload dialog will become
+            darker during the second restart (the "Server Offline" overlay will pop up beneath
+            the "Please Reload" overlay, another bug fixed in 1.2.8). Once it turns
+            lighter again, you may reload.
+        </p>
+        <p>
+            If you reload while the server is still starting, you will get a connection
+            error, since your browser will not be able to connect to the OctoPrint server
+            while it is still starting. In that case <strong>just wait a few minutes</strong>
+            and then reload your browser tab manually.
+        </p>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">{{ _('Ok, understood') }}</a>
+    </div>
+</div>

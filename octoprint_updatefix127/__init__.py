@@ -9,10 +9,8 @@ FIXED_VERSION = "1.2.8"
 
 class UpdateFix127Plugin(octoprint.plugin.StartupPlugin,
                          octoprint.plugin.AssetPlugin,
+                         octoprint.plugin.TemplatePlugin,
                          octoprint.plugin.SettingsPlugin):
-
-	# Note: we mark ourselves as an AssetPlugin instead of just a RestartNeedingPlugin
-	# since that will also trigger our UI to show the reload dialog
 
 	##~~ Softwareupdate hook
 
@@ -33,11 +31,22 @@ class UpdateFix127Plugin(octoprint.plugin.StartupPlugin,
 			)
 		)
 
+	##~~ Asset Plugin
+
+	def get_assets(self):
+		return dict(
+			js=["js/updatefix127.js"]
+		)
+
+	##~~ Startup Plugin
+
 	def on_after_startup(self):
 		if octoprint_version_matches(BROKEN_VERSION):
 			self._monkey_patch_127()
 		elif octoprint_version_matches(FIXED_VERSION):
 			self._uninstall_plugin()
+
+	##~~ Helpers
 
 	def _monkey_patch_127(self):
 		# "octoprint.plugins.softwareupdate" is actually loaded dynamically as
