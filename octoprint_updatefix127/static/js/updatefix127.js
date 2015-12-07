@@ -1,8 +1,11 @@
 $(function() {
-    function Updatefix127ViewModel() {
+    function Updatefix127ViewModel(parameters) {
         var self = this;
 
+        self.loginState = parameters[0];
+
         self.infodialog = undefined;
+        self.notification = undefined;
 
         self.onStartup = function() {
             self.infodialog = $("#plugin_updatefix127_infodialog");
@@ -17,9 +20,18 @@ $(function() {
             }
         };
 
-        self.onStartupComplete = function() {
-            // run once after startup is complete
-            self.onDataUpdaterReconnect();
+        self.onUserLoggedIn = function() {
+            if (self.loginState.isAdmin()) {
+                self.onDataUpdaterReconnect();
+            } else {
+                self.onUserLoggedOut();
+            }
+        };
+
+        self.onUserLoggedOut = function() {
+            if (self.notification) {
+                self.notification.remove();
+            }
         };
 
         self._isBrokenVersion = function(version) {
@@ -31,12 +43,16 @@ $(function() {
         };
 
         self._showDialog = function() {
+            if (!self.loginState.isAdmin()) return;
+
             if (self.infodialog.length) {
                 self.infodialog.modal("show");
             }
         };
 
         self._showNotification = function() {
+            if (!self.loginState.isAdmin()) return;
+
             var options = {
                 title: "Updatefix 1.2.7 active",
                 text: "You should now be able to update to OctoPrint 1.2.8 without issues.. For more information on what to expect, see the info dialog.",
@@ -63,13 +79,15 @@ $(function() {
             notify.options.confirm.buttons = [notify.options.confirm.buttons[0]];
             notify.modules.confirm.makeDialog(notify, notify.options.confirm);
             notify.open();
+
+            self.notification = notify;
         };
     }
 
     // view model class, parameters for constructor, container to bind to
     ADDITIONAL_VIEWMODELS.push([
         Updatefix127ViewModel,
-        [],
+        ["loginStateViewModel"],
         []
     ]);
 });
